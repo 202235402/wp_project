@@ -1,0 +1,12 @@
+version: "3.10"
+
+services:
+  fastapi:
+    image: fastapi
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app:/code/app
+
+#서비스, 네트워크, 볼륨 등 Docker컨테이너의 설정을 YAML형식으로 정의함. 개발 환경에서 여러 컨테이너를 쉽게 관리하고 구성할 있음.
