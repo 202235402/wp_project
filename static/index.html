@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko"
+<head>
+    <meta charset="UTF-8">
+    <title>감염병 백신 의약품 검색</title>
+</head>
+<body>
+    <form id="searchForm">
+        <input type="text" id="PRDLST_SN" placeholder="품목기준코드 입력" required>
+        <button tyle="submit">검색</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const PRDLST_SN = document.getElementById('PRDLST_SN').value;
+            const response = await fetch('/vaccine/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ServiceKey: '여기에_서비스키를_입력하세요',
+                    PRDLST_SN: PRDLST_SN,
+                    type: 'json'
+                })
+            });
+            const result = await response.json();
+            document.getElementById('results').innerText = JSON.stringify(result, null, 2);
+        }
+    </script>
+</body>
+</html>

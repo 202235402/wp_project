@@ -1,53 +1,31 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from fastapi import FastAPI, HTTPException
+import requests
 from pydantic import BaseModel
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///../todo.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-class Todo(Base):
-    __tablename__ = "todos"
-    __allow_unmapped__ = True
+#'static'폴더를 '/static'경로에 마운트
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
+class Vaccine(BaseModel):
+    service_key: str
+    prd_lst_sn: str
+    page_no: int = 1
+    num_of_rows: int = 10
+    type: str
 
-Base.metadata.create_all(bind=engine)
-
-class TodoCreate(BaseModel):
-    title: str
-    description: str
-class TodoUpdate(BaseModel):
-    title: str
-    description: str
-
-def get_db():
-    db = SessionLocal()
-    try: 
-        yield db
-    finally:
-        db.close()
-
-@app.post("/todos/", response_model=TodoCreate)
-def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
-    db_todo = Todo(title=todo.title, description=todo.description)
-    db.add(db_todo)
-    db.commit()
-    db.refresh(db_todo)
-    return db_todo
-
-@app.get("/todos/{todo_id}")
-def read_todo(todo_id: int, db: Session = Depends(get_db)):
-    db_todo = db.query(Todo).filter(Todo.id == todo_id).first()
-    if db_todo is None:
-        raise HTTPException(status_code=404, detail="Todo not found")
-    return db_todo
+@app.post("/vaccine/")
+def fetch_vaccine_info(query: Vaccine):
+    url = "http://apis.data.go.kr/1471000/IcdVacinDrugPrdtInfoService/getIcdVacinDrugPrdtInfo"
+    params = {
+        "ServiceKey": query.service_key,
+        "PRDLST_SN": query.prd_lst_sn,
+        "pageNo": query.page_no,
+        "numOfRows": query.num_of_rows,
+        "type": query.type
+    }
+    contents = requests.get(url, params=params)
+    if contents.status_code != 200:
+        raise HTTPException(status_code=404, detail="API request failed")
+    return {"message": contents.json()}
