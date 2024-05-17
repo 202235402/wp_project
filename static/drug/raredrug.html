@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>희귀 의약품 정보</title>
+</head>
+<body>
+    <h1>희귀 의약품 정보 조회</h1>
+    <form id="RareDrugInfo">
+        <input type="text" id="PRDT_NM" name="PRDT_NM" placeholder="제품명 입력">
+        <button type="button" onclick="fetchRareDrugInfo()">정보 조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        function fetchRareDrugInfo() {
+            const PRDT_NM = document.getElementById('PRDT_NM').value;
+            fetch('/raredrug', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    PRDT_NM: PRDT_NM,
+                    type: 'json'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let items = data.body.items;  // 'items' 배열에 접근
+                let resultHtml = '';
+                items.forEach(item => {
+                    resultHtml += `
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>희귀의약품지정번호:</strong> ${item.RARE_DRUG_NO}</p>
+                            <p><strong>제조소명:</strong> ${item.MFTR_NM}</p>
+                            <p><strong>대상질환:</strong> ${item.TRGT_DISS_NM}</p>
+                            <p><strong>제제명:</strong> ${item.MDCT_NM}</p>
+                            <hr>
+                        </div>
+                    `; 
+                });
+                document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html> 

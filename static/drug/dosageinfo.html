@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>성분별 1일 최대투여량 정보</title>
+</head>
+<body>
+    <h1>성분별 1일 최대투여량 정보 조회</h1>
+    <form id="DrugInfo">
+        <input type="text" id="DRUG_CPNT_KOR_NM" name="DRUG_CPNT_KOR_NM" placeholder="제품명 입력">
+        <button type="button" onclick="fetchDosageInfo()">정보 조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        function fetchDosageInfo() {
+            const DRUG_CPNT_KOR_NM = document.getElementById('DRUG_CPNT_KOR_NM').value;
+            fetch('/dosage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    DRUG_CPNT_KOR_NM: DRUG_CPNT_KOR_NM,
+                    type: 'json'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let items = data.body.items;  // 'items' 배열에 접근
+                let resultHtml = '';
+                items.forEach(item => {
+                    resultHtml += `
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>성분코드:</strong> ${item.CPNT_CD}</p>
+                            <p><strong>제형코드:</strong> ${item.FOML_CD}</p>
+                            <p><strong>제형명:</strong> ${item.FOML_NM}</p>
+                            <p><strong>투여경로:</strong> ${item.DOSAGE_ROUTE_CODE}</p>
+                            <p><strong>투여단위:</strong> ${item.DAY_MAX_DOSG_QY_UNIT}</p>
+                            <p><strong>1일 최대투여량:</strong> ${item.DAY_MAX_DOSG_QY}</p>
+                            <hr>
+                        </div>
+                    `; 
+                });
+                document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html> 

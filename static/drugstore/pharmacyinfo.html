@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>약국 정보 조회</title>
+    <style>
+        .details {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>약국 정보 조회</h1>
+    <form id="PharmacyInfo">
+        <input type="text" id="Q0" name="Q0" placeholder="시도를 입력하세요">
+        <input type="text" id="Q1" name="Q1" placeholder="시군구를 입력하세요">
+        <button type="button" onclick="fetchPharmacyInfo()">정보 조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        async function fetchPharmacyInfo() {
+            const Q0 = document.getElementById('Q0').value;
+            const Q1 = document.getElementById('Q1').value;
+            const response = await fetch('/getPharmacyInfo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    Q0: Q0,
+                    Q1: Q1
+                })
+            });
+            const data = await response.json();
+            let resultHtml = '';
+            data.forEach(item => {
+                const detailsId = `details-${item.institution_id}`;
+                resultHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>주소:</strong> ${item.address}</p>
+                        <p><strong>필독사항:</strong> ${item.remarks}</p>
+                        <p><strong>기관명:</strong> ${item.institution_name}</p>
+                        <p><strong>대표전화1:</strong> ${item.phone_number}</p>
+                        <button type="button" onclick="toggleDetails('${detailsId}', '${item.hours_1}', '${item.hours_2}', '${item.hours_3}', '${item.hours_4}', '${item.hours_5}', '${item.hours_6}', '${item.hours_7}', '${item.hours_8}', '${item.hours_9}', '${item.hours_10}', '${item.hours_11}', '${item.hours_12}', '${item.hours_13}', '${item.hours_14}', '${item.hours_15}', '${item.hours_16}')">진료시간</button>
+                        <div id="${detailsId}" class="details"></div>
+                        <p><strong>기관ID:</strong> ${item.institution_id}</p>
+                        <hr>
+                    </div>
+                `;
+            });
+            document.getElementById('results').innerHTML = resultHtml;
+        }
+
+        function toggleDetails(detailsId, hours_1, hours_2, hours_3, hours_4, hours_5, hours_6, hours_7, hours_8, hours_9, hours_10, hours_11, hours_12, hours_13, hours_14, hours_15, hours_16) {
+            const detailsDiv = document.getElementById(detailsId);
+            const formatHours = (hours) => hours ? hours : '약국을 운영하지 않습니다.';
+            if (detailsDiv.style.display === 'none' || detailsDiv.style.display === '') {
+                detailsDiv.innerHTML = `
+                    <p><strong>월요일 진료 시작 시간:</strong> ${formatHours(hours_1)}</p>
+                    <p><strong>월요일 진료 종료 시간:</strong> ${formatHours(hours_2)}</p>
+                    <p><strong>화요일 진료 시작 시간:</strong> ${formatHours(hours_3)}</p>
+                    <p><strong>화요일 진료 종료 시간:</strong> ${formatHours(hours_4)}</p>
+                    <p><strong>수요일 진료 시작 시간:</strong> ${formatHours(hours_5)}</p>
+                    <p><strong>수요일 진료 종료 시간:</strong> ${formatHours(hours_6)}</p>
+                    <p><strong>목요일 진료 시작 시간:</strong> ${formatHours(hours_7)}</p>
+                    <p><strong>목요일 진료 종료 시간:</strong> ${formatHours(hours_8)}</p>
+                    <p><strong>금요일 진료 시작 시간:</strong> ${formatHours(hours_9)}</p>
+                    <p><strong>금요일 진료 종료 시간:</strong> ${formatHours(hours_10)}</p>
+                    <p><strong>토요일 진료 시작 시간:</strong> ${formatHours(hours_11)}</p>
+                    <p><strong>토요일 진료 종료 시간:</strong> ${formatHours(hours_12)}</p>
+                    <p><strong>일요일 진료 시작 시간:</strong> ${formatHours(hours_13)}</p>
+                    <p><strong>일요일 진료 종료 시간:</strong> ${formatHours(hours_14)}</p>
+                    <p><strong>공휴일 진료 시작 시간:</strong> ${formatHours(hours_15)}</p>
+                    <p><strong>공휴일 진료 종료 시간:</strong> ${formatHours(hours_16)}</p>
+                `;
+                detailsDiv.style.display = 'block';
+            } else {
+                detailsDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

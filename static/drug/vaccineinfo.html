@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>감염병 백신 의약품 제품 정보</title>
+</head>
+<body>
+    <h1>감염병 백신 의약품 정보 조회</h1>
+    <form id="VaccinInfo">
+        <input type="text" id="PRDLST_NM" name="PRDLST_NM" placeholder="제품명 입력">
+        <button type="button" onclick="fetchVaccineInfo()">정보 조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        function fetchVaccineInfo() {
+            const PRDLST_NM = document.getElementById('PRDLST_NM').value;
+            fetch('/vaccine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    PRDLST_NM: PRDLST_NM,
+                    type: 'json'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let items = data.body.items;  // 'items' 배열에 접근
+                let resultHtml = '';
+                items.forEach(item => {
+                    resultHtml += `
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>품목기준코드:</strong> ${item.PRDLST_SN}</p>
+                            <p><strong>업체명:</strong> ${item.BSSH_NM}</p>
+                            <p><strong>허가일자:</strong> ${item.PRDLST_PRMSN_YMD}</p>
+                            <hr>
+                        </div>
+                    `; 
+                });
+                document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html> 

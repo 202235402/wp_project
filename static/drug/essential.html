@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>안전 상비 의약 정보</title>
+</head>
+<body>
+    <h1>안전 상비 의약 정보</h1>
+    <div id="essential-info"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchEssentialInfo();
+        });
+
+        async function fetchEssentialInfo() {
+            const response = await fetch('/essential', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ type: 'json' })  // 'json' 대신 실제 필요한 값을 입력
+            });
+            const data = await response.json();
+            displayEssentialInfo(data);
+        }
+
+        function displayEssentialInfo(data) {
+            const essentialInfoDiv = document.getElementById('essential-info');
+            essentialInfoDiv.innerHTML = ''; // 이전 데이터를 초기화
+
+            // 실제 API 응답 구조에 맞춰 데이터 표시
+            if (data.response && data.response.body && data.response.body.items) {
+                const items = data.response.body.items;
+                items.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.textContent = `제품명: ${item.PRDLST_NM}, 제조사: ${item.BSSH_NM}, 유효기간: ${item.VLD_PRD_YMD}, 보관 방법: ${item.STRG_MTH_CONT}`;
+                    essentialInfoDiv.appendChild(itemDiv);
+                });
+            } else {
+                essentialInfoDiv.textContent = '데이터가 없습니다.';
+            }
+        }
+    </script>
