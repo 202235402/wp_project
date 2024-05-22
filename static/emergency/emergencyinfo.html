@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>응급 의료 기관 찾기</title>
+</head>
+<body>
+    <h1>응급 의료 기관 찾기</h1>
+    <p><b>해당 검색 탭에 "시/군/구"를 검색하면 기관명, 기관ID, 주소, 대표전화, 응급실전화, 응급의료기관 분류명, 응급의료기관 분류가 출력됩니다.</b><div class="ex"></div>
+        검색 예시: 서울특별시 종로구</p>
+    <form id="EmergencyInfo">
+        <input type="text" id="Q0" name="Q0" placeholder="시/도를 입력하세요.">
+        <input type="text" id="Q1" name="Q1" placeholder="시/군/구를 입력하세요.">
+        <button type="button" onclick="fetchEmergencyInfo()">정보 조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        async function fetchEmergencyInfo() {
+            const Q0 = document.getElementById('Q0').value;
+            const Q1 = document.getElementById('Q1').value;
+            const response = await fetch('/getEmergencyInfo', {  // 엔드포인트 경로 수정
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    Q0: Q0,
+                    Q1: Q1,
+                })
+            });
+            
+            const data = await response.json();
+            let resultHtml = '';
+            if (data.length > 0) {  // 병원 정보가 있을 때만 처리
+                data.forEach(item => {
+                    resultHtml += `
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>기관명:</strong> ${item.dutyName}</p>
+                            <p><strong>기관 ID:</strong> ${item.hpid}</p>
+                            <p><strong>주소:</strong> ${item.dutyAddr}</p>
+                            <p><strong>대표전화:</strong> ${item.dutyTel1}</p>
+                            <p><strong>응급실전화:</strong> ${item.dutyTel3}</p>
+                            <p><strong>응급의료기관 분류:</strong> ${item.dutyEmcls}</p>
+                            <p><strong>응급의료기관 분류명:</strong> ${item.dutyEmclsName}</p>
+                            <hr>
+                        </div>
+                    `;
+                });
+            } else {
+                resultHtml = '<p>병원 정보를 찾을 수 없습니다.</p>';
+            }
+            document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+        } 
+    </script>
+</body>
+</html>

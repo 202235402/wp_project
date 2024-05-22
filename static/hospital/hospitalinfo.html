@@ -2,83 +2,65 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>병원 정보 조회</title>
+    <title>동네 병원 찾기</title>
 </head>
 <body>
-    <h1>병원 정보 조회</h1>
+    <h1>동네 병원 찾기</h1>
+    <p><b>해당 검색 탭에 "시/도 또는 읍/면/동"을 검색하면 병원명, 종별코드, 종별코드명, 주소, 전화번호, 홈페이지, 의사 정보가 출력됩니다.</b><div class="ex"></div>
+        검색 예시: 매탄동</p>
     <form id="HospitalInfo">
-        <input type="text" id="sidoCd" name="sidoCd" placeholder="시도 코드를 입력하세요">
-        <input type="text" id="sgguCd" name="sgguCd" placeholder="시군구 코드를 입력하세요">
-        <input type="text" id="emdongNm" name="emdongNm" placeholder="읍면동명을 입력하세요">
+        <input type="text" id="emdongNm" name="emdongNm" placeholder="시/구 또는 읍/면/동을 입력하세요.">
         <button type="button" onclick="fetchHospitalInfo()">정보 조회</button>
     </form>
     <div id="results"></div>
 
     <script>
         async function fetchHospitalInfo() {
-            const sidoCd = document.getElementById('sidoCd').value;
-            const sgguCd = document.getElementById('sgguCd').value;
             const emdongNm = document.getElementById('emdongNm').value;
-
-            try {
-                const postResponse = await fetch('/requesthospitalinfo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sidoCd: sidoCd,
-                        sgguCd: sgguCd,
-                        emdongNm: emdongNm
-                    })
-                });
-
-                if (!postResponse.ok) {
-                    throw new Error(`HTTP error! status: ${postResponse.status}`);
-                }
-
-                const getResponse = await fetch(`/gethospitalinfo?sidoCd=${sidoCd}&sgguCd=${sgguCd}&emdongNm=${emdongNm}`, {
-                    method: 'GET'
-                });
-
-                if (!getResponse.ok) {
-                    throw new Error(`HTTP error! status: ${getResponse.status}`);
-                }
-
-                const data = await getResponse.json();
-                let resultHtml = '';
+            const response = await fetch('/getHospitalInfo', {  // 엔드포인트 경로 수정
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    emdongNm: emdongNm,
+                })
+            });
+            
+            const data = await response.json();
+            let resultHtml = '';
+            if (data.length > 0) {  // 병원 정보가 있을 때만 처리
                 data.forEach(item => {
                     resultHtml += `
                         <div style="margin-bottom: 20px;">
                             <p><strong>병원명:</strong> ${item.yadmNm}</p>
-                            <p><strong>홈페이지:</strong> ${item.hospUrl}</p>
+                            <p><strong>종별코드:</strong> ${item.clCd}</p>
+                            <p><strong>종별코드명:</strong> ${item.clCdNm}</p>
+                            <p><strong>주소:</strong> ${item.addr}</p>
                             <p><strong>전화번호:</strong> ${item.telno}</p>
-                            <p><strong>병원종류:</strong> ${item.clCdNm}</p>
-                            <p><strong>전문의 수련의 수:</strong> ${item.cmdcResdntCnt}</p>
-                            <p><strong>전문의 수:</strong> ${item.cmdcSdrCnt}</p>
-                            <p><strong>간호사 수:</strong> ${item.pnursCnt}</p>
-                            <p><strong>거리:</strong> ${item.distance}</p>
-                            <p><strong>세부 전공 일반의 수:</strong> ${item.detyGdrCnt}</p>
-                            <p><strong>세부 전공 인턴 수:</strong> ${item.detyIntnCnt}</p>
-                            <p><strong>세부 전공 수련의 수:</strong> ${item.detyResdntCnt}</p>
-                            <p><strong>세부 전공 전문의 수:</strong> ${item.detySdrCnt}</p>
-                            <p><strong>일반의 수:</strong> ${item.cmdcGdrCnt}</p>
-                            <p><strong>인턴 수:</strong> ${item.cmdcIntnCnt}</p>
-                            <p><strong>진료과목별 수련의 수:</strong> ${item.mdeptResdntCnt}</p>
-                            <p><strong>의사 총 수:</strong> ${item.drTotCnt}</p>
-                            <p><strong>진료과목별 일반의 수:</strong> ${item.mdeptGdrCnt}</p>
-                            <p><strong>진료과목별 인턴 수:</strong> ${item.mdeptIntnCnt}</p>
-                            <p><strong>진료과목별 전문의 수:</strong> ${item.mdeptSdrCnt}</p>
+                            <p><strong>홈페이지:</strong> ${item.hospUrl}</p>
+                            <p><strong>의사 총수:</strong> ${item.drTotCnt}</p>
+                            <p><strong>의과 일반의 인원수:</strong> ${item.mdeptGdrCnt}</p>
+                            <p><strong>의과 인턴 인원수:</strong> ${item.mdeptIntnCnt}</p>
+                            <p><strong>의과 레지던트 인원수:</strong> ${item.mdeptResdntCnt}</p>
+                            <p><strong>의과 전문의 인원수:</strong> ${item.mdeptSdrCnt}</p>
+                            <p><strong>치과 일반의 인원수:</strong> ${item.detyGdrCnt}</p>
+                            <p><strong>치과 인턴 인원수:</strong> ${item.detyIntnCnt}</p>
+                            <p><strong>치과 레지던트 인원수:</strong> ${item.detyResdntCnt}</p>
+                            <p><strong>치과 전문의 인원수:</strong> ${item.detySdrCnt}</p>
+                            <p><strong>한방 일반의 인원수:</strong> ${item.cmdcGdrCnt}</p>
+                            <p><strong>한방 인턴 인원수:</strong> ${item.cmdcIntnCnt}</p>
+                            <p><strong>한방 레지던트 인원수:</strong> ${item.cmdcResdntCnt}</p>
+                            <p><strong>한방 전문의 인원수:</strong> ${item.cmdcSdrCnt}</p>
                             <hr>
                         </div>
                     `;
                 });
-                document.getElementById('results').innerHTML = resultHtml;
-            } catch (error) {
-                console.error("Error fetching hospital info:", error);
-                document.getElementById('results').innerHTML = `오류 발생: ${error.message}`;
+            } else {
+                resultHtml = '<p>병원 정보를 찾을 수 없습니다.</p>';
             }
-        }
+            document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+        } 
     </script>
 </body>
 </html>

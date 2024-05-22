@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>예방접종 대상 감염병 상세 정보 조회</title>
+</head>
+<body>
+    <h1>예방접종 대상 감염병 상세 정보 조회</h1>
+    <p><b>해당 검색 탭에 "접종 코드"를 검색하면 감염병 명, 감염병 설명이 출력됩니다.</b><div class="ex"></div>
+        검색 예시: 01</p>
+    <form id="Detail">
+        <input type="text" id="vcnCd" name="vcnCd" placeholder="접종 코드를 입력하세요.">
+        <button type="button" onclick="fetchDetail()">조회</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        async function fetchDetail() {
+            const vcnCd = document.getElementById('vcnCd').value;
+            const response = await fetch('/detail', {  // 엔드포인트 경로 수정
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    vcnCd: vcnCd,
+                })
+            });
+            
+            const data = await response.json();
+            let resultHtml = '';
+            if (data.length > 0) {  // 병원 정보가 있을 때만 처리
+                data.forEach(item => {
+                    resultHtml += `
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>감염병 명:</strong> ${item.title}</p>
+                            <p><strong>감염병 설명:</strong> ${item.message}</p>
+                            <hr>
+                        </div>
+                    `;
+                });
+            } else {
+                resultHtml = '<p>정보를 찾을 수 없습니다.</p>';
+            }
+            document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+        } 
+    </script>
+</body>
+</html>

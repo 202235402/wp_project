@@ -2,48 +2,52 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>희귀 의약품 정보</title>
+    <title>희귀 의약품 정보 조회</title>
 </head>
 <body>
     <h1>희귀 의약품 정보 조회</h1>
-    <form id="RareDrugInfo">
-        <input type="text" id="PRDT_NM" name="PRDT_NM" placeholder="제품명 입력">
-        <button type="button" onclick="fetchRareDrugInfo()">정보 조회</button>
+    <p><b>해당 검색 탭에 "희귀 의약품 제품명"을 검색하면 희귀의약품지정번호, 제조소명, 대상질환, 제제명이 출력됩니다.</b><div class="ex"></div>
+        검색 예시: 레티서트</p>
+    <form id="RareDrug">
+        <input type="text" id="PRDT_NM" name="PRDT_NM" placeholder="제품명을 입력하세요.">
+        <button type="button" onclick="fetchRareDrug()">정보 조회</button>
     </form>
     <div id="results"></div>
 
     <script>
-        function fetchRareDrugInfo() {
+        async function fetchRareDrug() {
             const PRDT_NM = document.getElementById('PRDT_NM').value;
-            fetch('/raredrug', {
+            const response = await fetch('/raredrug', {  // 엔드포인트 경로 수정
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     PRDT_NM: PRDT_NM,
-                    type: 'json'
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                let items = data.body.items;  // 'items' 배열에 접근
-                let resultHtml = '';
-                items.forEach(item => {
+            });
+            
+            const data = await response.json();
+            let resultHtml = '';
+            if (data.length > 0) {  // 병원 정보가 있을 때만 처리
+                data.forEach(item => {
                     resultHtml += `
-                        <div style="margin-bottom: 20px;">
-                            <p><strong>희귀의약품지정번호:</strong> ${item.RARE_DRUG_NO}</p>
-                            <p><strong>제조소명:</strong> ${item.MFTR_NM}</p>
-                            <p><strong>대상질환:</strong> ${item.TRGT_DISS_NM}</p>
-                            <p><strong>제제명:</strong> ${item.MDCT_NM}</p>
-                            <hr>
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>희귀의약품지정번호:</strong> ${item.RARE_DRUG_NO}</p>
+                        <p><strong>제조소명:</strong> ${item.MFTR_NM}</p>
+                        <p><strong>제제명:</strong> ${item.MDCT_NM}</p>
+                        <p><strong>대상질환:</strong> ${item.TRGT_DISS_NM}</p>
+                        <p><strong>제품명:</strong> ${item.PRDT_NM}</p>
+                        <hr>
                         </div>
-                    `; 
+
+                    `;
                 });
-                document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
-            })
-            .catch(error => console.error('Error:', error));
-        }
+            } else {
+                resultHtml = '<p>의약 정보를 찾을 수 없습니다.</p>';
+            }
+            document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
+        } 
     </script>
 </body>
-</html> 
+</html>

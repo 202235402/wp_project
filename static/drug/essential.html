@@ -19,7 +19,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ type: 'json' })  // 'json' 대신 실제 필요한 값을 입력
+                body: JSON.stringify({ page_no: 1, num_of_rows: 3, type: 'json' })  // 필요한 값을 입력
             });
             const data = await response.json();
             displayEssentialInfo(data);
@@ -42,3 +42,5 @@
             }
         }
     </script>
+</body>
+</html>

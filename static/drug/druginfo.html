@@ -6,6 +6,8 @@
 </head>
 <body>
     <h1>의약품 정보 조회</h1>
+    <p><b>해당 검색 탭에 "의약 제품명"을 검색하면 업체명, 제품명, 품목기준코드, 효능, 사용법, 사용전 주의사항, 사용중 주의사항, 주의해야 할 약/음식, 부작용, 보관법, 낱알 이미지가 출력됩니다.</b><div class="ex"></div>
+    검색 예시: 아스피린/활명수</p>
     <form id="DrugInfo">
         <input type="text" id="itemName" name="itemName" placeholder="제품명 입력">
         <button type="button" onclick="fetchDrugInfo()">정보 조회</button>
@@ -33,12 +35,13 @@
                     resultHtml += `
                         <div style="margin-bottom: 20px;">
                             <p><strong>업체명:</strong> ${item.entpName}</p>
+                            <p><strong>제품명:</strong> ${item.itemName}</p>
                             <p><strong>품목기준코드:</strong> ${item.itemSeq}</p>
                             <p><strong>효능:</strong> ${item.efcyQesitm}</p>
                             <p><strong>사용법:</strong> ${item.useMethodQesitm}</p>
-                            <p><strong>이 약을 사용하기 전 반드시 알아야 할 내용:</strong> ${item.atpnQesitm}</p>
-                            <p><strong>이 약의 사용상 주의사항:</strong> ${item.atpnQesitm}</p>
-                            <p><strong>이 약을 사용하는 동안 주의해야 할 약 또는 음식:</strong> ${item.intrcQesitm}</p>
+                            <p><strong>사용 전 주의 사항:</strong> ${item.atpnQesitm}</p>
+                            <p><strong>사용 중 주의 사항:</strong> ${item.atpnQesitm}</p>
+                            <p><strong>사용 중 주의해야 할 약/음식:</strong> ${item.intrcQesitm}</p>
                             <p><strong>부작용:</strong> ${item.seQesitm}</p>
                             <p><strong>보관법:</strong> ${item.depositMethodQesitm}</p>
                             <p><strong>낱알 이미지:</strong> <img src="${item.itemImage}" alt="낱알 이미지" width="800" /></p>
