@@ -21,26 +21,16 @@ class Dosage(BaseModel):
     DRUG_CPNT_KOR_NM: str
     type: str = 'json'
 class RareDrug(BaseModel):
-    PRDT_NM: str
-    type: str = 'json'
-class Essential(BaseModel):
-    page_no: int = 1
-    num_of_rows: int = 3
-    type: str = 'json'
-
-#질병 openAPI
-class Disease(BaseModel):
-    znCd: str
-
-
+    goods_name: str
 #약국 openAPI
 class PharmacyInfo(BaseModel):
     Q0: str
     Q1: str
+#질병 openAPI
+class Disease(BaseModel):
+    dissCd: str
 class Detail(BaseModel):
     vcnCd: str
-
-
 #병원 정보 openAPI
 class HospitalInfo(BaseModel):
     emdongNm: str
@@ -53,8 +43,6 @@ class MedicalCode(BaseModel):
 class Holiday(BaseModel):
     Q0: str
     Q1: str
-
-
 #응급 의료 기관 openAPI
 class EmergencyInfo(BaseModel):
     Q0: str
@@ -63,10 +51,7 @@ class TraumaCenter(BaseModel):
     Q0: str
     Q1: str
 
-
-
-
-
+#의약품 정보 검색
 @app.post("/drug")
 def fetch_drug_info(query: Drug):
     url = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList?serviceKey=ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D&type=json'
@@ -78,17 +63,7 @@ def fetch_drug_info(query: Drug):
     data = response.json()
     return JSONResponse(content=data)
 
-@app.post("/vaccine")
-def fetch_vaccine_info(query: Vaccine):
-    url = 'http://apis.data.go.kr/1471000/IcdVacinDrugPrdtInfoService/getIcdVacinDrugPrdtInfo?serviceKey=ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D&type=json'
-    params ={
-        'PRDLST_NM' : query.PRDLST_NM,
-        'type' : query.type
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    return JSONResponse(content=data)
-
+#1일 의약품 최대 투여량 정보 검색
 @app.post("/dosage")
 def fetch_dosage_info(query: Dosage):
     url = 'http://apis.data.go.kr/1471000/DayMaxDosgQyByIngdService/getDayMaxDosgQyByIngdInq?serviceKey=ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D&type=json'
@@ -100,15 +75,57 @@ def fetch_dosage_info(query: Dosage):
     data = response.json()
     return JSONResponse(content=data)
 
-@app.post("/raredrug")
-async def fetch_rare_drug(query: RareDrug):
-    url = "http://apis.data.go.kr/1471000/RareDrugCpntService01/getRareDrugCpntInq01"
-    params = {
-        'ServiceKey': 'ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D',
-        'PRDT_NM': query.PRDT_NM,
+#감염병 백신 의약품 정보 검색
+@app.post("/vaccine")
+def fetch_vaccine_info(query: Vaccine):
+    url = 'http://apis.data.go.kr/1471000/IcdVacinDrugPrdtInfoService/getIcdVacinDrugPrdtInfo?serviceKey=ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D&type=json'
+    params ={
+        'PRDLST_NM' : query.PRDLST_NM,
         'type' : query.type
     }
+    response = requests.get(url, params=params)
+    data = response.json()
+    return JSONResponse(content=data)
 
+#희귀 의약품 정보 검색
+@app.post("/raredrug")
+async def fetch_rare_drug(query: RareDrug):
+    url = "http://apis.data.go.kr/1471000/RareMdcinInfoService01/getRareMdcinList01"
+    params = {
+        'ServiceKey': 'ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D',
+        'goods_name': query.goods_name
+    }
+    response = requests.get(url, params=params)
+    
+    if response.status_code != 200:
+        return {"error": "API 요청 실패"}, response.status_code
+    
+    root = ET.fromstring(response.content)
+    disease_list = []
+    
+    for item in root.findall('.//item'):
+        disease_info = {
+            "GOODS_NAME": item.find('GOODS_NAME').text if item.find('GOODS_NAME') is not None else "",
+            "PRODT_NAME": item.find('PRODT_NAME').text if item.find('PRODT_NAME') is not None else "",
+            "RARITY_DRUG_APPOINT_NO": item.find('RARITY_DRUG_APPOINT_NO').text if item.find('RARITY_DRUG_APPOINT_NO') is not None else "",
+            "TARGET_DISEASE": item.find('TARGET_DISEASE').text if item.find('TARGET_DISEASE') is not None else "",
+            "MANUFPLACE_NAME": item.find('MANUFPLACE_NAME').text if item.find('MANUFPLACE_NAME') is not None else "",
+            "MANUF_NAME": item.find('MANUF_NAME').text if item.find('MANUF_NAME') is not None else "",
+            "MANUFPLACE_ADDR1": item.find('MANUFPLACE_ADDR1').text if item.find('MANUFPLACE_ADDR1') is not None else "",
+            "MANUFPLACE_ADDR2": item.find('MANUFPLACE_ADDR2').text if item.find('MANUFPLACE_ADDR2') is not None else "",           
+            "MANUFPLACE_TEL_NO": item.find('MANUFPLACE_TEL_NO').text if item.find('MANUFPLACE_TEL_NO') is not None else "",
+        }
+        disease_list.append(disease_info)
+    
+    return JSONResponse(content=disease_list)
+
+#안전 상비 의약품 목록
+@app.post("/essential")
+def fetch_essential_info():
+    url = 'http://apis.data.go.kr/1471000/SafeStadDrugService/getSafeStadDrugInq'
+    params ={
+        'serviceKey' : 'ccGlKVP4vK6%2FVd8U3ePooH6zq6w%2BEFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA%3D%3D',
+    }
     response = requests.get(url, params=params)
     
     if response.status_code != 200:
@@ -119,110 +136,16 @@ async def fetch_rare_drug(query: RareDrug):
     
     for item in root.findall('.//item'):
         drug_info = {
-            "RARE_DRUG_NO": item.find('RARE_DRUG_NO').text if item.find('RARE_DRUG_NO') is not None else "",
-            "MFTR_NM": item.find('MFTR_NM').text if item.find('MFTR_NM') is not None else "",
-            "MDCT_NM": item.find('MDCT_NM').text if item.find('MDCT_NM') is not None else "",
-            "TRGT_DISS_NM": item.find('TRGT_DISS_NM').text if item.find('TRGT_DISS_NM') is not None else "",
-            "PRDT_NM": item.find('PRDT_NM').text if item.find('PRDT_NM') is not None else "",
+            "PRDLST_NM": item.find('PRDLST_NM').text if item.find('PRDLST_NM') is not None else "",
+            "BSSH_NM": item.find('BSSH_NM').text if item.find('BSSH_NM') is not None else "",
+            "VLD_PRD_YMD": item.find('VLD_PRD_YMD').text if item.find('VLD_PRD_YMD') is not None else "",
+            "STRG_MTH_CONT": item.find('STRG_MTH_CONT').text if item.find('STRG_MTH_CONT') is not None else "",
             }
         drug_list.append(drug_info)
-    
+        
     return JSONResponse(content=drug_list)
 
-@app.post("/essential")
-def fetch_essential_info(query: Essential):
-    url = 'http://apis.data.go.kr/1471000/SafeStadDrugService/getSafeStadDrugInq'
-    params ={
-        'serviceKey' : 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
-        'page_no' : query.page_no,
-        'num_of_rows' : query.num_of_rows,
-        'type' : query.type
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    return JSONResponse(content=data)
-
-
-#질병 예측 정보
-@app.post("/diseaseinfo")
-async def fetch_disease_info(query: Disease):
-    url = "http://apis.data.go.kr/B550928/dissForecastInfoSvc/getDissForecastInfo"
-    params = {
-        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
-        'znCd': query.znCd,
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="API request failed")
-    
-    root = ET.fromstring(response.content)
-    disease_list = []
-    
-    for item in root.findall('.//item'):
-        disease_info = {
-            "dissCd": item.find('dissCd').text if item.find('dissCd') is not None else "",
-            "cnt": item.find('cnt').text if item.find('cnt') is not None else "",
-            "risk": item.find('risk').text if item.find('risk') is not None else "",
-            "dissRiskXpln": item.find('dissRiskXpln').text if item.find('dissRiskXpln') is not None else "",
-            "dt": item.find('dt').text if item.find('dt') is not None else "",
-            }
-        disease_list.append(disease_info)
-    
-    return JSONResponse(content=disease_list)
-
-#예방접종 감염병 정보
-@app.post("/vaccination")
-async def fetch_vaccination():
-    url = "http://apis.data.go.kr/1790387/vcninfo/getCondVcnCd"
-    params = {
-        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="API request failed")
-    
-    root = ET.fromstring(response.content)
-    disease_list = []
-    
-    for item in root.findall('.//item'):
-        disease_info = {
-            "cd": item.find('cd').text if item.find('cd') is not None else "",
-            "cdNm": item.find('cdNm').text if item.find('cdNm') is not None else "",
-            }
-        disease_list.append(disease_info)
-    
-    return JSONResponse(content=disease_list)
-
-@app.post("/detail")
-async def fetch_detail(query: Detail):
-    url = "http://apis.data.go.kr/1790387/vcninfo/getVcnInfo"
-    params = {
-        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
-        'vcnCd': query.vcnCd 
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="API request failed")
-    
-    root = ET.fromstring(response.content)
-    disease_list = []
-    
-    for item in root.findall('.//item'):
-        disease_info = {
-            "title": item.find('title').text if item.find('title') is not None else "",
-            "message": item.find('message').text if item.find('message') is not None else ""
-            }
-        disease_list.append(disease_info)
-    
-    return JSONResponse(content=disease_list)
-
-
+#약국 정보 검색
 @app.post("/getPharmacyInfo")
 async def get_pharmacy_info(query: PharmacyInfo):
     url = "http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire"
@@ -268,6 +191,87 @@ async def get_pharmacy_info(query: PharmacyInfo):
     
     return JSONResponse(content=pharmacy_list)
 
+#질병 예측 정보
+@app.post("/diseaseinfo")
+async def fetch_disease_info(query: Disease):
+    url = "http://apis.data.go.kr/B550928/dissForecastInfoSvc/getDissForecastInfo"
+    params = {
+        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
+        'dissCd': query.dissCd,
+    }
+    response = requests.get(url, params=params)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="API request failed")
+    
+    root = ET.fromstring(response.content)
+    disease_list = []
+    
+    for item in root.findall('.//item'):
+        disease_info = {
+            "znCd": item.find('znCd').text if item.find('znCd') is not None else "",
+            "dissCd": item.find('dissCd').text if item.find('dissCd') is not None else "",
+            "cnt": item.find('cnt').text if item.find('cnt') is not None else "",
+            "risk": item.find('risk').text if item.find('risk') is not None else "",
+            "dissRiskXpln": item.find('dissRiskXpln').text if item.find('dissRiskXpln') is not None else "",
+            "dt": item.find('dt').text if item.find('dt') is not None else "",
+            }
+        disease_list.append(disease_info)
+    
+    return JSONResponse(content=disease_list)
+
+
+#예방접종 감염병 정보
+@app.post("/vaccination")
+async def fetch_vaccination():
+    url = "http://apis.data.go.kr/1790387/vcninfo/getCondVcnCd"
+    params = {
+        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
+    }
+
+    response = requests.get(url, params=params)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="API request failed")
+    
+    root = ET.fromstring(response.content)
+    disease_list = []
+    
+    for item in root.findall('.//item'):
+        disease_info = {
+            "cd": item.find('cd').text if item.find('cd') is not None else "",
+            "cdNm": item.find('cdNm').text if item.find('cdNm') is not None else "",
+            }
+        disease_list.append(disease_info)
+    
+    return JSONResponse(content=disease_list)
+#상세 정보(감염병 백신)
+@app.post("/detail")
+async def fetch_detail(query: Detail):
+    url = "http://apis.data.go.kr/1790387/vcninfo/getVcnInfo"
+    params = {
+        'ServiceKey': 'ccGlKVP4vK6/Vd8U3ePooH6zq6w+EFSEHPTyq19WmAuLlAXB5krJemrGyDxvFw4GgejS2hZNV8r6qfMUMtpQgA==',
+        'vcnCd': query.vcnCd 
+    }
+
+    response = requests.get(url, params=params)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="API request failed")
+    
+    root = ET.fromstring(response.content)
+    disease_list = []
+    
+    for item in root.findall('.//item'):
+        disease_info = {
+            "title": item.find('title').text if item.find('title') is not None else "",
+            "message": item.find('message').text if item.find('message') is not None else ""
+            }
+        disease_list.append(disease_info)
+    
+    return JSONResponse(content=disease_list)
+
+#동네 병원 찾기
 @app.post("/getHospitalInfo")
 async def get_hospital_info(query: HospitalInfo):
     url = "http://apis.data.go.kr/B551182/hospInfoService1/getHospBasisList1"
@@ -430,7 +434,7 @@ async def get_holiday(query: Holiday):
     
     return JSONResponse(content=hospital_list)
 
-#응급 의료 정보 openAPI
+#응급 의료 정보 찾기
 @app.post("/getEmergencyInfo")
 async def get_emergency_info(query: EmergencyInfo):
     url = "http://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytListInfoInqire"
@@ -462,6 +466,7 @@ async def get_emergency_info(query: EmergencyInfo):
     
     return JSONResponse(content=emergency_list)
 
+#권역 외상 센터 찾기
 @app.post("/getTraumaCenter")
 async def get_trauma_center(query: TraumaCenter):
     url = "http://apis.data.go.kr/B552657/ErmctInfoInqireService/getStrmListInfoInqire"

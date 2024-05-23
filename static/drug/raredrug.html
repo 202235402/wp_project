@@ -7,23 +7,23 @@
 <body>
     <h1>희귀 의약품 정보 조회</h1>
     <p><b>해당 검색 탭에 "희귀 의약품 제품명"을 검색하면 희귀의약품지정번호, 제조소명, 대상질환, 제제명이 출력됩니다.</b><div class="ex"></div>
-        검색 예시: 레티서트</p>
+        검색 예시: 동종 배아줄기세포유래 망막색소상피세포</p>
     <form id="RareDrug">
-        <input type="text" id="PRDT_NM" name="PRDT_NM" placeholder="제품명을 입력하세요.">
+        <input type="text" id="goods_name" name="goods_name" placeholder="제품명을 입력하세요.">
         <button type="button" onclick="fetchRareDrug()">정보 조회</button>
     </form>
     <div id="results"></div>
 
     <script>
         async function fetchRareDrug() {
-            const PRDT_NM = document.getElementById('PRDT_NM').value;
+            const goods_name = document.getElementById('goods_name').value;
             const response = await fetch('/raredrug', {  // 엔드포인트 경로 수정
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    PRDT_NM: PRDT_NM,
+                    goods_name: goods_name,
                 })
             });
             
@@ -33,11 +33,15 @@
                 data.forEach(item => {
                     resultHtml += `
                     <div style="margin-bottom: 20px;">
-                        <p><strong>희귀의약품지정번호:</strong> ${item.RARE_DRUG_NO}</p>
-                        <p><strong>제조소명:</strong> ${item.MFTR_NM}</p>
-                        <p><strong>제제명:</strong> ${item.MDCT_NM}</p>
-                        <p><strong>대상질환:</strong> ${item.TRGT_DISS_NM}</p>
-                        <p><strong>제품명:</strong> ${item.PRDT_NM}</p>
+                        <p><strong>제품명:</strong> ${item.GOODS_NAME}</p>
+                        <p><strong>제제명:</strong> ${item.PRODT_NAME}</p>
+                        <p><strong>희귀의약품지정번호:</strong> ${item.RARITY_DRUG_APPOINT_NO}</p>
+                        <p><strong>대상질환:</strong> ${item.TARGET_DISEASE}</p>
+                        <p><strong>제조소명:</strong> ${item.MANUFPLACE_NAME}</p>
+                        <p><strong>제조원:</strong> ${item.MANUF_NAME}</p>
+                        <p><strong>제조소 주소1:</strong> ${item.MANUFPLACE_ADDR1}</p>
+                        <p><strong>제조소 주소2:</strong> ${item.MANUFPLACE_ADDR2}</p>
+                        <p><strong>제조소 전화번호:</strong> ${item.MANUFPLACE_TEL_NO}</p>
                         <hr>
                         </div>
 
