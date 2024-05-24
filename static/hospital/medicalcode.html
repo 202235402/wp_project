@@ -6,11 +6,11 @@
 </head>
 <body>
     <h1>진료 과목별 병원 정보 조회</h1>
-    <p><b>해당 검색 탭에 "진료 과목 코드"를 검색하면 병원명, 종별코드명, 주소, 전화번호, 사이트 주소, 설립일이 출력됩니다.</b><div class="ex"></div>
+    <p><b>검색 탭에 "진료과목코드"를 검색하면 병원명, 종별코드명, 주소, 전화번호, 사이트 주소, 설립일이 출력됩니다.</b><div class="ex"></div>
         검색 예시: 49(치과)/01(내과)</p>
-    <button type="button" id="allcodesBtn">전체 진료 과목 코드</button>
+    <button type="button" id="allcodesBtn">전체 진료과목코드</button>
     <form id="MedicalCode">
-        <input type="text" id="dgsbjtCd" name="dgsbjtCd" placeholder="진료 과목 코드를 입력하세요.">
+        <input type="text" id="dgsbjtCd" name="dgsbjtCd" placeholder="진료과목코드를 입력하세요.">
         <button type="button" onclick="fetchMedicalCode()">병원 조회</button>
     </form>
     <div id="results"></div>

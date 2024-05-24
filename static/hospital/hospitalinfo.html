@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>동네 병원 찾기</h1>
-    <p><b>해당 검색 탭에 "시/도 또는 읍/면/동"을 검색하면 병원명, 종별코드, 종별코드명, 주소, 전화번호, 홈페이지, 의사 정보가 출력됩니다.</b><div class="ex"></div>
+    <p><b>검색 탭에 "시/도 또는 읍/면/동"을 검색하면 병원명, 종별코드, 종별코드명, 주소, 전화번호, 홈페이지, 의사 정보가 출력됩니다.</b><div class="ex"></div>
         검색 예시: 매탄동</p>
     <form id="HospitalInfo">
         <input type="text" id="emdongNm" name="emdongNm" placeholder="시/구 또는 읍/면/동을 입력하세요.">
@@ -29,38 +29,48 @@
             
             const data = await response.json();
             let resultHtml = '';
-            if (data.length > 0) {  // 병원 정보가 있을 때만 처리
-                data.forEach(item => {
-                    resultHtml += `
-                        <div style="margin-bottom: 20px;">
-                            <p><strong>병원명:</strong> ${item.yadmNm}</p>
-                            <p><strong>종별코드:</strong> ${item.clCd}</p>
-                            <p><strong>종별코드명:</strong> ${item.clCdNm}</p>
-                            <p><strong>주소:</strong> ${item.addr}</p>
-                            <p><strong>전화번호:</strong> ${item.telno}</p>
-                            <p><strong>홈페이지:</strong> ${item.hospUrl}</p>
-                            <p><strong>의사 총수:</strong> ${item.drTotCnt}</p>
-                            <p><strong>의과 일반의 인원수:</strong> ${item.mdeptGdrCnt}</p>
-                            <p><strong>의과 인턴 인원수:</strong> ${item.mdeptIntnCnt}</p>
-                            <p><strong>의과 레지던트 인원수:</strong> ${item.mdeptResdntCnt}</p>
-                            <p><strong>의과 전문의 인원수:</strong> ${item.mdeptSdrCnt}</p>
-                            <p><strong>치과 일반의 인원수:</strong> ${item.detyGdrCnt}</p>
-                            <p><strong>치과 인턴 인원수:</strong> ${item.detyIntnCnt}</p>
-                            <p><strong>치과 레지던트 인원수:</strong> ${item.detyResdntCnt}</p>
-                            <p><strong>치과 전문의 인원수:</strong> ${item.detySdrCnt}</p>
-                            <p><strong>한방 일반의 인원수:</strong> ${item.cmdcGdrCnt}</p>
-                            <p><strong>한방 인턴 인원수:</strong> ${item.cmdcIntnCnt}</p>
-                            <p><strong>한방 레지던트 인원수:</strong> ${item.cmdcResdntCnt}</p>
-                            <p><strong>한방 전문의 인원수:</strong> ${item.cmdcSdrCnt}</p>
-                            <hr>
-                        </div>
-                    `;
-                });
+            data.forEach(item => {
+                const detailsId = `details-${item.yadmNm}`;
+                resultHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>병원명:</strong> ${item.yadmNm}</p>
+                        <p><strong>종별코드:</strong> ${item.clCd}</p>
+                        <p><strong>종별코드명:</strong> ${item.clCdNm}</p>
+                        <p><strong>주소:</strong> ${item.addr}</p>
+                        <p><strong>전화번호:</strong> ${item.telno}</p>
+                        <p><strong>홈페이지:</strong> ${item.hospUrl}</p>
+                        <button type="button" onclick="toggleDetails('${detailsId}', '${item.drTotCnt}', '${item.mdeptGdrCnt}', '${item.mdeptIntnCnt}', '${item.mdeptResdntCnt}', '${item.mdeptSdrCnt}', '${item.detyGdrCnt}', '${item.detyIntnCnt}', '${item.detyResdntCnt}', '${item.detySdrCnt}', '${item.cmdcGdrCnt}', '${item.cmdcIntnCnt}', '${item.cmdcResdntCnt}', '${item.cmdcSdrCnt}')">의료진 인원수</button>
+                        <div id="${detailsId}" class="details" style="display: none;"></div>
+                        <hr>
+                    </div>
+                `;
+            });
+            document.getElementById('results').innerHTML = resultHtml;
+        }
+
+        function toggleDetails(detailsId, drTotCnt, mdeptGdrCnt, mdeptIntnCnt, mdeptResdntCnt, mdeptSdrCnt, detyGdrCnt, detyIntnCnt, detyResdntCnt, detySdrCnt, cmdcGdrCnt, cmdcIntnCnt, cmdcResdntCnt, cmdcSdrCnt) {
+            const detailsDiv = document.getElementById(detailsId);
+            if (detailsDiv.style.display === 'none' || detailsDiv.style.display === '') {
+                detailsDiv.innerHTML = `
+                    <p><strong>의사총수:</strong> ${drTotCnt}</p>
+                    <p><strong>의과일반의 인원수:</strong> ${mdeptGdrCnt}</p>
+                    <p><strong>의과인턴 인원수:</strong> ${mdeptIntnCnt}</p>
+                    <p><strong>의과레지던트 인원수:</strong> ${mdeptResdntCnt}</p>
+                    <p><strong>의과전문의 인원수:</strong> ${mdeptSdrCnt}</p>
+                    <p><strong>치과일반의 인원수:</strong> ${detyGdrCnt}</p>
+                    <p><strong>치과인턴 인원수:</strong> ${detyIntnCnt}</p>
+                    <p><strong>치과레지던트 인원수:</strong> ${detyResdntCnt}</p>
+                    <p><strong>치과전문의 인원수:</strong> ${detySdrCnt}</p>
+                    <p><strong>한방일반의 인원수:</strong> ${cmdcGdrCnt}</p>
+                    <p><strong>한방인턴 인원수:</strong> ${cmdcIntnCnt}</p>
+                    <p><strong>한방레지던트 인원수:</strong> ${cmdcResdntCnt}</p>
+                    <p><strong>한방전문의 인원수:</strong> ${cmdcSdrCnt}</p>
+                `;
+                detailsDiv.style.display = 'block';
             } else {
-                resultHtml = '<p>병원 정보를 찾을 수 없습니다.</p>';
+                detailsDiv.style.display = 'none';
             }
-            document.getElementById('results').innerHTML = resultHtml;  // 결과 HTML을 페이지에 삽입
-        } 
+        }
     </script>
 </body>
 </html>

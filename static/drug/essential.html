@@ -2,16 +2,17 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>상비 의약품 목록</title>
+    <title>안전 상비 의약품 목록</title>
 </head>
 <body>
-    <h1>상비 의약품 목록</h1>
-    <form id="Essential">
-        <button type="button" onclick="fetchEssential()">정보 조회</button></p>
-    </form>
+    <h1>안전 상비 의약품 목록</h1>
     <div id="results"></div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchEssential();
+        });
+
         async function fetchEssential() {
             const response = await fetch('/essential', {
                 method: 'POST',
